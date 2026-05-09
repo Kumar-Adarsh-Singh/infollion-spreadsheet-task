@@ -60,9 +60,8 @@ export const Cell = memo(function Cell({
 
   return (
     <div
-      className={`w-[100px] h-[28px] px-1 text-sm leading-[28px] border-r border-b border-gray-300 truncate cursor-cell box-border ${
-        hasError ? 'text-red-600 font-medium' : ''
-      }`}
+      className={`w-[100px] h-[28px] px-1 text-sm text-center leading-[28px] border-r border-b border-gray-300 truncate cursor-cell box-border ${hasError ? 'text-red-600 font-medium' : ''
+        }`}
       onClick={() => onSelect(cellId)}
     >
       {displayValue}

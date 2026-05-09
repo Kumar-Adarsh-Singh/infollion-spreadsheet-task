@@ -4,9 +4,7 @@ import { FormulaBar } from './FormulaBar';
 import { Toolbar } from './Toolbar';
 import { Grid } from './Grid';
 import { parseCellId, makeCellId } from '../utils/cellUtils';
-
-const INITIAL_ROWS = 10;
-const INITIAL_COLS = 10;
+import { MAX_ROWS, MAX_COLS } from '../utils/constants';
 
 export function Spreadsheet() {
   const { store, version } = useSpreadsheet();
@@ -47,8 +45,8 @@ export function Spreadsheet() {
           let nextRow = pos.row;
           let nextCol = pos.col;
 
-          if (direction === 'down') nextRow = Math.min(nextRow + 1, INITIAL_ROWS - 1);
-          if (direction === 'right') nextCol = Math.min(nextCol + 1, INITIAL_COLS - 1);
+          if (direction === 'down') nextRow = Math.min(nextRow + 1, MAX_ROWS - 1);
+          if (direction === 'right') nextCol = Math.min(nextCol + 1, MAX_COLS - 1);
 
           const nextId = makeCellId(nextCol, nextRow);
           setActiveCellId(nextId);
@@ -102,8 +100,8 @@ export function Spreadsheet() {
         onCancel={handleCancel}
       />
       <Grid
-        rowCount={INITIAL_ROWS}
-        colCount={INITIAL_COLS}
+        rowCount={MAX_ROWS}
+        colCount={MAX_COLS}
         activeCellId={activeCellId}
         editValue={editValue}
         store={store}
