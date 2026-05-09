@@ -1,4 +1,4 @@
-import { useRef, memo } from 'react';
+import { useRef, memo, forwardRef, useImperativeHandle } from 'react';
 import { useVirtualGrid } from '../hooks/useVirtualGrid';
 import { colIndexToLabel, makeCellId } from '../utils/cellUtils';
 import { Cell } from './Cell';
@@ -14,28 +14,39 @@ interface GridProps {
   rowCount: number;
   colCount: number;
   activeCellId: string | null;
+  isEditing: boolean;
   editValue: string;
   store: SpreadsheetStore;
   version: number;
   onSelect: (cellId: string) => void;
+  onStartEditing: (cellId: string) => void;
   onEditChange: (value: string) => void;
   onCommit: (direction?: 'down' | 'right') => void;
   onCancel: () => void;
+  onKeyDown: (e: React.KeyboardEvent) => void;
 }
 
-export function Grid({
-  rowCount,
-  colCount,
-  activeCellId,
-  editValue,
-  store,
-  version,
-  onSelect,
-  onEditChange,
-  onCommit,
-  onCancel,
-}: GridProps) {
+export const Grid = forwardRef<HTMLDivElement, GridProps>(function Grid(
+  {
+    rowCount,
+    colCount,
+    activeCellId,
+    isEditing,
+    editValue,
+    store,
+    version,
+    onSelect,
+    onStartEditing,
+    onEditChange,
+    onCommit,
+    onCancel,
+    onKeyDown,
+  },
+  ref
+) {
   const containerRef = useRef<HTMLDivElement>(null);
+  useImperativeHandle(ref, () => containerRef.current!);
+
   const vw = useVirtualGrid(containerRef, rowCount, colCount);
 
   const totalWidth = ROW_HEADER_WIDTH + colCount * DEFAULT_CELL_WIDTH;
@@ -50,7 +61,9 @@ export function Grid({
   return (
     <div
       ref={containerRef}
-      className="overflow-auto border border-gray-300 bg-white"
+      tabIndex={0}
+      onKeyDown={onKeyDown}
+      className="overflow-auto border border-gray-300 bg-white outline-none"
       style={{ height: 'calc(100vh - 160px)' }}
     >
       <div style={{ width: totalWidth, height: totalHeight, position: 'relative' }}>
@@ -98,10 +111,12 @@ export function Grid({
             rowIdx={rowIdx}
             visibleCols={visibleCols}
             activeCellId={activeCellId}
+            isEditing={isEditing}
             editValue={editValue}
             store={store}
             version={version}
             onSelect={onSelect}
+            onStartEditing={onStartEditing}
             onEditChange={onEditChange}
             onCommit={onCommit}
             onCancel={onCancel}
@@ -110,16 +125,18 @@ export function Grid({
       </div>
     </div>
   );
-}
+});
 
 interface VirtualRowProps {
   rowIdx: number;
   visibleCols: number[];
   activeCellId: string | null;
+  isEditing: boolean;
   editValue: string;
   store: SpreadsheetStore;
   version: number;
   onSelect: (cellId: string) => void;
+  onStartEditing: (cellId: string) => void;
   onEditChange: (value: string) => void;
   onCommit: (direction?: 'down' | 'right') => void;
   onCancel: () => void;
@@ -129,10 +146,12 @@ const VirtualRow = memo(function VirtualRow({
   rowIdx,
   visibleCols,
   activeCellId,
+  isEditing,
   editValue,
   store,
   version: _version,
   onSelect,
+  onStartEditing,
   onEditChange,
   onCommit,
   onCancel,
@@ -180,9 +199,11 @@ const VirtualRow = memo(function VirtualRow({
               cellId={cellId}
               displayValue={displayValue}
               hasError={hasError}
-              isActive={isActive}
+              isSelected={isActive}
+              isEditing={isActive && isEditing}
               editValue={isActive ? editValue : ''}
               onSelect={onSelect}
+              onStartEditing={onStartEditing}
               onEditChange={onEditChange}
               onCommit={onCommit}
               onCancel={onCancel}
