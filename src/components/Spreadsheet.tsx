@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useSpreadsheet } from '../hooks/useSpreadsheet';
 import { FormulaBar } from './FormulaBar';
+import { Toolbar } from './Toolbar';
 import { Grid } from './Grid';
 import { parseCellId, makeCellId } from '../utils/cellUtils';
 
@@ -8,7 +9,7 @@ const INITIAL_ROWS = 10;
 const INITIAL_COLS = 10;
 
 export function Spreadsheet() {
-  const store = useSpreadsheet();
+  const { store, version } = useSpreadsheet();
   const [activeCellId, setActiveCellId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
 
@@ -70,9 +71,29 @@ export function Spreadsheet() {
     setEditValue('');
   }, [activeCellId, store]);
 
+  const handleUndo = useCallback(() => {
+    store.undo();
+    if (activeCellId) {
+      setEditValue(store.getCellRawValue(activeCellId));
+    }
+  }, [store, activeCellId]);
+
+  const handleRedo = useCallback(() => {
+    store.redo();
+    if (activeCellId) {
+      setEditValue(store.getCellRawValue(activeCellId));
+    }
+  }, [store, activeCellId]);
+
   return (
     <div className="p-4">
       <h1 className="text-xl font-semibold text-gray-800 mb-3">Spreadsheet Engine</h1>
+      <Toolbar
+        canUndo={store.canUndo()}
+        canRedo={store.canRedo()}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+      />
       <FormulaBar
         activeCellId={activeCellId}
         editValue={editValue}
@@ -86,6 +107,7 @@ export function Spreadsheet() {
         activeCellId={activeCellId}
         editValue={editValue}
         store={store}
+        version={version}
         onSelect={handleSelect}
         onEditChange={handleEditChange}
         onCommit={handleCommit}
@@ -94,3 +116,4 @@ export function Spreadsheet() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+
 import { ColumnHeader } from './ColumnHeader';
 import { Row } from './Row';
 
@@ -10,6 +10,7 @@ interface GridProps {
   activeCellId: string | null;
   editValue: string;
   store: SpreadsheetStore;
+  version: number;
   onSelect: (cellId: string) => void;
   onEditChange: (value: string) => void;
   onCommit: (direction?: 'down' | 'right') => void;
@@ -22,23 +23,18 @@ export function Grid({
   activeCellId,
   editValue,
   store,
+  version,
   onSelect,
   onEditChange,
   onCommit,
   onCancel,
 }: GridProps) {
-  const getCellDisplay = useCallback(
-    (cellId: string) => store.getCellDisplay(cellId),
-    [store]
-  );
+  const getCellDisplay = (cellId: string) => store.getCellDisplay(cellId);
 
-  const getCellError = useCallback(
-    (cellId: string) => {
-      const data = store.getCellData(cellId);
-      return data?.error != null;
-    },
-    [store]
-  );
+  const getCellError = (cellId: string) => {
+    const data = store.getCellData(cellId);
+    return data?.error != null;
+  };
 
   return (
     <div className="overflow-auto border border-gray-300 bg-white">
@@ -51,6 +47,7 @@ export function Grid({
             colCount={colCount}
             activeCellId={activeCellId}
             editValue={editValue}
+            version={version}
             getCellDisplay={getCellDisplay}
             getCellError={getCellError}
             onSelect={onSelect}

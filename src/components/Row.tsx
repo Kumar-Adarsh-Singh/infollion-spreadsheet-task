@@ -7,6 +7,7 @@ interface RowProps {
   colCount: number;
   activeCellId: string | null;
   editValue: string;
+  version: number;
   getCellDisplay: (cellId: string) => string;
   getCellError: (cellId: string) => boolean;
   onSelect: (cellId: string) => void;

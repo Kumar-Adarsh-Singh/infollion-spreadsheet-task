@@ -1,6 +1,7 @@
 import type { CellId, CellData } from '../types';
 import { DependencyGraph } from './DependencyGraph';
 import { Recalculator } from './Recalculator';
+import { UndoRedoManager } from './UndoRedoManager';
 
 export class SpreadsheetStore {
   private cells: Map<CellId, CellData> = new Map();
@@ -8,6 +9,8 @@ export class SpreadsheetStore {
   private recalculator: Recalculator = new Recalculator(this.graph);
   private listeners: Set<() => void> = new Set();
   private version = 0;
+  private undoRedo: UndoRedoManager = new UndoRedoManager();
+  private isUndoRedoAction = false;
 
   getVersion = (): number => {
     return this.version;
@@ -36,9 +39,49 @@ export class SpreadsheetStore {
       return [];
     }
 
+    const oldRawValue = this.getCellRawValue(cellId);
+
+    if (oldRawValue === trimmed) {
+      return [];
+    }
+
+    if (!this.isUndoRedoAction) {
+      this.undoRedo.push([{ cellId, oldRawValue, newRawValue: trimmed }]);
+    }
+
     const affectedCells = this.recalculator.processCell(cellId, trimmed, this.cells);
     this.notifyListeners();
     return affectedCells;
+  }
+
+  undo(): void {
+    const batch = this.undoRedo.undo();
+    if (!batch) return;
+
+    this.isUndoRedoAction = true;
+    for (const cmd of batch) {
+      this.setCellValue(cmd.cellId, cmd.oldRawValue);
+    }
+    this.isUndoRedoAction = false;
+  }
+
+  redo(): void {
+    const batch = this.undoRedo.redo();
+    if (!batch) return;
+
+    this.isUndoRedoAction = true;
+    for (const cmd of batch) {
+      this.setCellValue(cmd.cellId, cmd.newRawValue);
+    }
+    this.isUndoRedoAction = false;
+  }
+
+  canUndo(): boolean {
+    return this.undoRedo.canUndo();
+  }
+
+  canRedo(): boolean {
+    return this.undoRedo.canRedo();
   }
 
   getAllCells(): Map<CellId, CellData> {
@@ -67,3 +110,4 @@ export class SpreadsheetStore {
     return this.cells;
   }
 }
+
