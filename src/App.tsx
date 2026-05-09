@@ -1,16 +1,10 @@
-import './index.css'; // Ensure this is imported either here or in main.tsx
+import { Spreadsheet } from './components/Spreadsheet';
+import './index.css';
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-xl shadow-lg">
-        <h1 className="text-3xl font-bold text-blue-600 mb-2">
-          Spreadsheet Engine
-        </h1>
-        <p className="text-gray-600">
-          Tailwind is successfully configured and running.
-        </p>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <Spreadsheet />
     </div>
   );
 }

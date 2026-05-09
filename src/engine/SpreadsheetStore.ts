@@ -7,6 +7,11 @@ export class SpreadsheetStore {
   private graph: DependencyGraph = new DependencyGraph();
   private recalculator: Recalculator = new Recalculator(this.graph);
   private listeners: Set<() => void> = new Set();
+  private version = 0;
+
+  getVersion = (): number => {
+    return this.version;
+  };
 
   getCellData(cellId: CellId): CellData | undefined {
     return this.cells.get(cellId);
@@ -52,6 +57,7 @@ export class SpreadsheetStore {
   }
 
   private notifyListeners(): void {
+    this.version++;
     for (const listener of this.listeners) {
       listener();
     }
